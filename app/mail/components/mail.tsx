@@ -30,7 +30,7 @@ import { MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
 import { Nav } from "./nav";
 import { type Mail } from "../data";
-import { useMail } from "../use-mail";
+import { MailProvider, useMail } from "../use-mail";
 
 interface MailProps {
   accounts: {
@@ -44,7 +44,7 @@ interface MailProps {
   navCollapsedSize: number;
 }
 
-export function Mail({
+function Mail({
   accounts,
   mails,
   defaultLayout = [20, 32, 48],
@@ -222,3 +222,11 @@ export function Mail({
     </TooltipProvider>
   );
 }
+
+export const WrappedMail = (props: MailProps) => {
+  return (
+    <MailProvider>
+      <Mail {...props} />
+    </MailProvider>
+  );
+};

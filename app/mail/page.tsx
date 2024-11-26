@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import Image from "next/image";
 
-import { Mail } from "./components/mail";
+import { WrappedMail } from "./components/mail";
 import { accounts, mails } from "./data";
 
 export default async function MailPage() {
@@ -30,7 +30,7 @@ export default async function MailPage() {
         />
       </div>
       <div className="hidden flex-col md:flex">
-        <Mail
+        <WrappedMail
           accounts={accounts}
           mails={mails}
           defaultLayout={defaultLayout}
