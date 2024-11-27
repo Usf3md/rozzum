@@ -30,7 +30,7 @@ const FilterGroup = ({ options, defaultSelectedOptions, label }: Props) => {
     defaultSelectedOptions ?? []
   );
   return (
-    <div className="group flex flex-col gap-4 py-2 px-2">
+    <div className="group flex flex-col gap-2 py-2 px-2">
       <h2 className="text-md font-semibold">{label}</h2>
       <nav className="grid gap-1">
         {options.map((option, index) => {

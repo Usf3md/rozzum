@@ -1,3 +1,5 @@
+import { StaticImageData } from "next/image";
+
 export type Post = {
   id: number;
   title: string;
@@ -5,7 +7,7 @@ export type Post = {
   imageURL: string;
   postBody: string;
   tags: string[];
-  Likes: number;
+  likes: number;
   liked: boolean;
   read: boolean;
   date: Date;
