@@ -52,9 +52,11 @@ const PostDialog = ({ children, postInfo, loading, addComment }: Props) => {
 
       <DialogContent className="max-w-[80rem]">
         {loading ? (
-          <div className="w-full flex items-center justify-center">
-            <Loader2 className="animate-spin w-8 h-8" />
-          </div>
+          <DialogTitle>
+            <div className="w-full flex items-center justify-center">
+              <Loader2 className="animate-spin w-8 h-8" />
+            </div>
+          </DialogTitle>
         ) : (
           <div className="flex gap-8 w-full">
             <div className="w-full flex flex-col h-full justify-between gap-8">
@@ -137,7 +139,9 @@ const PostDialog = ({ children, postInfo, loading, addComment }: Props) => {
                       <div className="flex flex-col gap-4 p-4">
                         {[...postInfo?.comments].reverse().map((comment) => (
                           <div
-                            key={`${comment.time.toISOString()}${comment.id}`}
+                            key={`${new Date(comment.time).toISOString()}${
+                              comment.id
+                            }`}
                             className="flex gap-2"
                           >
                             <Avatar className="w-8 h-8">
