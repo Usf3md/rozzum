@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Badge } from "../ui/badge";
+import RichTextEditor from "../text-editor";
 
 type Props = {
   primaryTags: Tag[];
@@ -65,7 +66,7 @@ const CreatePostDialog = ({ primaryTags, secondaryTags }: Props) => {
           <PlusCircle /> New Post
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-[40rem]">
         <DialogHeader>
           <DialogTitle>New Post</DialogTitle>
         </DialogHeader>
@@ -81,12 +82,9 @@ const CreatePostDialog = ({ primaryTags, secondaryTags }: Props) => {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="username">Body</Label>
-            <Textarea
-              id="body"
-              rows={8}
-              placeholder="Your body here..."
+            <RichTextEditor
               value={form.body}
-              onChange={(e) => setForm({ ...form, body: e.target.value })}
+              onChange={(e) => setForm({ ...form, body: e })}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -192,7 +190,7 @@ const CreatePostDialog = ({ primaryTags, secondaryTags }: Props) => {
         </div>
         <DialogFooter>
           <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
-            Save changes
+            Post
           </Button>
         </DialogFooter>
       </DialogContent>
