@@ -57,7 +57,7 @@ const PostDialog = ({ children, postInfo, loading, addComment }: Props) => {
           </div>
         ) : (
           <div className="flex gap-8 w-full">
-            <div className="w-full flex flex-col h-full justify-between">
+            <div className="w-full flex flex-col h-full justify-between gap-8">
               <DialogHeader>
                 <DialogTitle>Post #{postInfo?.id}</DialogTitle>
               </DialogHeader>
