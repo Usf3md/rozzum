@@ -136,7 +136,10 @@ const PostDialog = ({ children, postInfo, loading, addComment }: Props) => {
                     <ScrollArea className="h-[30rem] w-full">
                       <div className="flex flex-col gap-4 p-4">
                         {[...postInfo?.comments].reverse().map((comment) => (
-                          <div className="flex gap-2">
+                          <div
+                            key={`${comment.time.toISOString()}${comment.id}`}
+                            className="flex gap-2"
+                          >
                             <Avatar className="w-8 h-8">
                               <AvatarImage alt="User Image" />
                               <AvatarFallback className="text-sm">
