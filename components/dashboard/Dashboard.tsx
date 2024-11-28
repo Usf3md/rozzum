@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useContext, useEffect } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import { TooltipProvider } from "../ui/tooltip";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "../ui/resizable";
-import { Post } from "@/app/types";
+import { Post, Tag } from "@/app/types";
 import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
 import FilterGroup from "./FilterGroup";
@@ -18,6 +18,10 @@ import {
   BrainCog,
   HandCoins,
   Building2,
+  LucideIcon,
+  TagIcon,
+  Loader2,
+  PlusCircle,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Input } from "../ui/input";
@@ -26,6 +30,26 @@ import Logo from "../Logo";
 import { ModeToggle } from "../ModeToggle";
 import { ScrollArea } from "../ui/scroll-area";
 import { PostsProvider, usePosts } from "@/app/context/PostsContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useUser } from "@/app/context/UserContext";
+import { useRouter } from "next/navigation";
+import { iconsMap } from "@/app/common";
+import CreatePostDialog from "./CreatePostDialog";
 
 interface DashboardProps {
   posts: Post[];
@@ -34,35 +58,40 @@ interface DashboardProps {
   navCollapsedSize?: number;
 }
 
-const options = [
-  {
-    id: 0,
-    title: "Frontend",
-    icon: PaintRoller,
-  },
-  {
-    id: 1,
-    title: "Backend",
-    icon: Server,
-  },
-  {
-    id: 2,
-    title: "Data Science",
-    icon: BrainCog,
-  },
-  {
-    id: 3,
-    title: "Accounting",
-    icon: HandCoins,
-  },
-  {
-    id: 4,
-    title: "Company Wide",
-    icon: Building2,
-  },
-];
+type Filters = {
+  primaryTags: number[];
+  secondaryTags: number[];
+  bookmarks: boolean;
+};
 
 const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
+  const [primaryTags, setPrimaryTags] = useState<Tag[]>([]);
+  const [secondaryTags, setSecondaryTags] = useState<Tag[]>([]);
+  const { user } = useUser();
+  const [filters, setFilters] = useState<Filters>({
+    primaryTags: user?.teamId ? [user.teamId] : [],
+    secondaryTags: [],
+    bookmarks: false,
+  });
+  useEffect(() => {
+    fetch("/api/primaryTags")
+      .then((res) => res.json())
+      .then((data) => setPrimaryTags(data));
+  }, []);
+  useEffect(() => {
+    fetch("/api/secondaryTags")
+      .then((res) => res.json())
+      .then((data) => setSecondaryTags(data));
+  }, []);
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const options = primaryTags.map((tag) => ({
+    ...tag,
+    icon:
+      iconsMap.find(
+        (item) => item.tagName.toLowerCase() === tag.name.toLowerCase()
+      )?.tagIcon ?? TagIcon,
+  }));
   return (
     <TooltipProvider delayDuration={0}>
       <ResizablePanelGroup
@@ -82,59 +111,105 @@ const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
             <FilterGroup
               label="Primary Tags"
               options={options}
-              defaultSelectedOptions={[]}
+              defaultSelectedOptions={user?.teamId ? [user.teamId] : []}
+              handleChange={(ids) =>
+                setFilters({
+                  ...filters,
+                  primaryTags: ids,
+                })
+              }
             ></FilterGroup>
             <Separator className="my-2 " />
             <FilterGroup
               label="Secondary Tags"
-              options={options}
+              options={secondaryTags.map((tag) => ({
+                ...tag,
+                icon: TagIcon,
+              }))}
               defaultSelectedOptions={[]}
+              handleChange={(ids) =>
+                setFilters({
+                  ...filters,
+                  secondaryTags: ids,
+                })
+              }
             ></FilterGroup>
           </ScrollArea>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-          <Tabs defaultValue="all">
-            <div className="flex justify-between items-center px-4 py-2">
-              <h1 className="text-xl font-bold">Posts</h1>
-              <div className="flex gap-4">
-                <TabsList>
-                  <TabsTrigger
-                    value="all"
-                    className="text-zinc-600 dark:text-zinc-200"
-                  >
-                    All posts
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="unread"
-                    className="text-zinc-600 dark:text-zinc-200"
-                  >
-                    Unread
-                  </TabsTrigger>
-                </TabsList>
+          <div className=" h-[52px] flex justify-between items-center px-4 py-2">
+            <h1 className="text-xl font-bold">Posts</h1>
+            <CreatePostDialog
+              primaryTags={primaryTags}
+              secondaryTags={secondaryTags}
+            />
+          </div>
+          <Separator />
+          <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <form>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search"
+                  className="pl-8"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-            </div>
-            <Separator />
-            <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <form>
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search" className="pl-8" />
-                </div>
-              </form>
-            </div>
-            <PostsProvider>
-              <PostsShell />
-            </PostsProvider>
-          </Tabs>
+            </form>
+          </div>
+          <PostsProvider>
+            <PostsShell searchQuery={searchQuery} filters={filters} />
+          </PostsProvider>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[2]} minSize={24}>
-          <div className="flex justify-between items-center px-4 py-2">
-            <h1 className="text-xl font-bold">User Info</h1>
+          <div className="flex justify-end gap-4 items-center px-4 py-2">
             <div className="flex gap-4">
               <ModeToggle />
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="w-8 h-8 cursor-pointer">
+                  <AvatarImage src={user?.image_file} alt="User Image" />
+                  <AvatarFallback>
+                    {`${user?.first_name
+                      .substring(0, 1)
+                      .toLocaleUpperCase()}${user?.last_name
+                      .substring(0, 1)
+                      .toLocaleUpperCase()}`}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    {`${user?.first_name} ${user?.last_name}`}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>{`${user?.email}`}</DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem>
+                  <Button
+                    variant={"destructive"}
+                    onClick={() => {
+                      fetch("/api/logout", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      }).then(() => router.push("/login"));
+                    }}
+                  >
+                    Log out
+                  </Button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <Separator />
           <div>Ranking and stats</div>
@@ -144,101 +219,48 @@ const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
   );
 };
 
-const ps: Post[] = [
-  {
-    id: 0,
-    title: "What is this?",
-    author: "Youssef Emad",
-    imageURL: "",
-    postBody:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Modi veritatis saepe iure eius aliquam cupiditate iste officia debitis, vel, ut atque harum, nesciunt voluptatem? Libero cumque molestias velit expedita inventore. Ad ea dolore expedita ullam vel consectetur error consequuntur soluta, odit alias quam voluptatibus neque facere maxime optio. Molestias dolorem cupiditate aliquam ducimus iure fugiat non, necessitatibus officiis sit est. Suscipit rerum molestiae adipisci dicta aliquam neque molestias laborum ipsam saepe fugit animi odio porro magnam tempore facilis, ad perspiciatis. Accusantium excepturi harum ea optio quod. Harum ad provident nam? Eum repellat, suscipit velit ullam repellendus numquam officiis debitis quia culpa commodi consequuntur exercitationem ipsam error aut asperiores illum odio tempora veniam nihil voluptate eos in. Itaque impedit recusandae hic! Ab vel ducimus tenetur tempora neque culpa, quae aspernatur nesciunt corporis? Dolorem repellendus a, veritatis et cumque obcaecati consectetur. Provident error voluptatum sunt ratione neque eos consequuntur, hic quidem quasi. Maiores deleniti laudantium consequatur nemo eligendi? Accusamus numquam asperiores amet sint praesentium ea distinctio assumenda magni, consequatur facilis quidem, quisquam labore nam modi eum impedit a. Libero quam temporibus ad! Sint rerum assumenda reiciendis officia quos excepturi adipisci, dolorem accusantium maiores vel odio, nesciunt similique harum non maxime. Maxime qui eos a vel facilis minima tenetur expedita laboriosam, magnam ipsa! Fugiat iure nisi itaque explicabo, vero incidunt beatae? Aut consequuntur debitis cupiditate facilis aperiam placeat ipsum numquam enim fugit perferendis, suscipit quo. Ullam facere ipsum perspiciatis ipsam quas labore fugit. Quisquam rerum fugit, dolor corrupti officiis aliquam quam dolore, suscipit obcaecati dolorum autem repellendus quos odit! Obcaecati pariatur, delectus nam eligendi ab, atque neque consequatur, consectetur nulla possimus at officia? Dolore repellat possimus id vel esse quasi numquam aliquid reprehenderit nihil quod explicabo eligendi soluta iste qui asperiores, unde placeat. Soluta excepturi unde, laborum maiores iusto ipsum nam debitis ad?",
-    tags: ["Hello", "World", "Hello", "World"],
-    likes: 50,
-    liked: true,
-    read: true,
-    date: new Date(),
-  },
-  {
-    id: 1,
-    title: "What is this?",
-    author: "Youssef Emad",
-    imageURL: "",
-    postBody:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Modi veritatis saepe iure eius aliquam cupiditate iste officia debitis, vel, ut atque harum, nesciunt voluptatem? Libero cumque molestias velit expedita inventore. Ad ea dolore expedita ullam vel consectetur error consequuntur soluta, odit alias quam voluptatibus neque facere maxime optio. Molestias dolorem cupiditate aliquam ducimus iure fugiat non, necessitatibus officiis sit est. Suscipit rerum molestiae adipisci dicta aliquam neque molestias laborum ipsam saepe fugit animi odio porro magnam tempore facilis, ad perspiciatis. Accusantium excepturi harum ea optio quod. Harum ad provident nam? Eum repellat, suscipit velit ullam repellendus numquam officiis debitis quia culpa commodi consequuntur exercitationem ipsam error aut asperiores illum odio tempora veniam nihil voluptate eos in. Itaque impedit recusandae hic! Ab vel ducimus tenetur tempora neque culpa, quae aspernatur nesciunt corporis? Dolorem repellendus a, veritatis et cumque obcaecati consectetur. Provident error voluptatum sunt ratione neque eos consequuntur, hic quidem quasi. Maiores deleniti laudantium consequatur nemo eligendi? Accusamus numquam asperiores amet sint praesentium ea distinctio assumenda magni, consequatur facilis quidem, quisquam labore nam modi eum impedit a. Libero quam temporibus ad! Sint rerum assumenda reiciendis officia quos excepturi adipisci, dolorem accusantium maiores vel odio, nesciunt similique harum non maxime. Maxime qui eos a vel facilis minima tenetur expedita laboriosam, magnam ipsa! Fugiat iure nisi itaque explicabo, vero incidunt beatae? Aut consequuntur debitis cupiditate facilis aperiam placeat ipsum numquam enim fugit perferendis, suscipit quo. Ullam facere ipsum perspiciatis ipsam quas labore fugit. Quisquam rerum fugit, dolor corrupti officiis aliquam quam dolore, suscipit obcaecati dolorum autem repellendus quos odit! Obcaecati pariatur, delectus nam eligendi ab, atque neque consequatur, consectetur nulla possimus at officia? Dolore repellat possimus id vel esse quasi numquam aliquid reprehenderit nihil quod explicabo eligendi soluta iste qui asperiores, unde placeat. Soluta excepturi unde, laborum maiores iusto ipsum nam debitis ad?",
-    tags: ["Hello", "World"],
-    likes: 50,
-    liked: false,
-    read: false,
-    date: new Date(),
-  },
-  {
-    id: 2,
-    title: "What is this?",
-    author: "Youssef Emad",
-    imageURL: "",
-    postBody:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Modi veritatis saepe iure eius aliquam cupiditate iste officia debitis, vel, ut atque harum, nesciunt voluptatem? Libero cumque molestias velit expedita inventore. Ad ea dolore expedita ullam vel consectetur error consequuntur soluta, odit alias quam voluptatibus neque facere maxime optio. Molestias dolorem cupiditate aliquam ducimus iure fugiat non, necessitatibus officiis sit est. Suscipit rerum molestiae adipisci dicta aliquam neque molestias laborum ipsam saepe fugit animi odio porro magnam tempore facilis, ad perspiciatis. Accusantium excepturi harum ea optio quod. Harum ad provident nam? Eum repellat, suscipit velit ullam repellendus numquam officiis debitis quia culpa commodi consequuntur exercitationem ipsam error aut asperiores illum odio tempora veniam nihil voluptate eos in. Itaque impedit recusandae hic! Ab vel ducimus tenetur tempora neque culpa, quae aspernatur nesciunt corporis? Dolorem repellendus a, veritatis et cumque obcaecati consectetur. Provident error voluptatum sunt ratione neque eos consequuntur, hic quidem quasi. Maiores deleniti laudantium consequatur nemo eligendi? Accusamus numquam asperiores amet sint praesentium ea distinctio assumenda magni, consequatur facilis quidem, quisquam labore nam modi eum impedit a. Libero quam temporibus ad! Sint rerum assumenda reiciendis officia quos excepturi adipisci, dolorem accusantium maiores vel odio, nesciunt similique harum non maxime. Maxime qui eos a vel facilis minima tenetur expedita laboriosam, magnam ipsa! Fugiat iure nisi itaque explicabo, vero incidunt beatae? Aut consequuntur debitis cupiditate facilis aperiam placeat ipsum numquam enim fugit perferendis, suscipit quo. Ullam facere ipsum perspiciatis ipsam quas labore fugit. Quisquam rerum fugit, dolor corrupti officiis aliquam quam dolore, suscipit obcaecati dolorum autem repellendus quos odit! Obcaecati pariatur, delectus nam eligendi ab, atque neque consequatur, consectetur nulla possimus at officia? Dolore repellat possimus id vel esse quasi numquam aliquid reprehenderit nihil quod explicabo eligendi soluta iste qui asperiores, unde placeat. Soluta excepturi unde, laborum maiores iusto ipsum nam debitis ad?",
-    tags: ["Hello", "World"],
-    likes: 50,
-    liked: false,
-    read: true,
-    date: new Date(),
-  },
-  {
-    id: 3,
-    title: "What is this?",
-    author: "Youssef Emad",
-    imageURL: "",
-    postBody:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Modi veritatis saepe iure eius aliquam cupiditate iste officia debitis, vel, ut atque harum, nesciunt voluptatem? Libero cumque molestias velit expedita inventore. Ad ea dolore expedita ullam vel consectetur error consequuntur soluta, odit alias quam voluptatibus neque facere maxime optio. Molestias dolorem cupiditate aliquam ducimus iure fugiat non, necessitatibus officiis sit est. Suscipit rerum molestiae adipisci dicta aliquam neque molestias laborum ipsam saepe fugit animi odio porro magnam tempore facilis, ad perspiciatis. Accusantium excepturi harum ea optio quod. Harum ad provident nam? Eum repellat, suscipit velit ullam repellendus numquam officiis debitis quia culpa commodi consequuntur exercitationem ipsam error aut asperiores illum odio tempora veniam nihil voluptate eos in. Itaque impedit recusandae hic! Ab vel ducimus tenetur tempora neque culpa, quae aspernatur nesciunt corporis? Dolorem repellendus a, veritatis et cumque obcaecati consectetur. Provident error voluptatum sunt ratione neque eos consequuntur, hic quidem quasi. Maiores deleniti laudantium consequatur nemo eligendi? Accusamus numquam asperiores amet sint praesentium ea distinctio assumenda magni, consequatur facilis quidem, quisquam labore nam modi eum impedit a. Libero quam temporibus ad! Sint rerum assumenda reiciendis officia quos excepturi adipisci, dolorem accusantium maiores vel odio, nesciunt similique harum non maxime. Maxime qui eos a vel facilis minima tenetur expedita laboriosam, magnam ipsa! Fugiat iure nisi itaque explicabo, vero incidunt beatae? Aut consequuntur debitis cupiditate facilis aperiam placeat ipsum numquam enim fugit perferendis, suscipit quo. Ullam facere ipsum perspiciatis ipsam quas labore fugit. Quisquam rerum fugit, dolor corrupti officiis aliquam quam dolore, suscipit obcaecati dolorum autem repellendus quos odit! Obcaecati pariatur, delectus nam eligendi ab, atque neque consequatur, consectetur nulla possimus at officia? Dolore repellat possimus id vel esse quasi numquam aliquid reprehenderit nihil quod explicabo eligendi soluta iste qui asperiores, unde placeat. Soluta excepturi unde, laborum maiores iusto ipsum nam debitis ad?",
-    tags: ["Hello", "World"],
-    likes: 50,
-    liked: false,
-    read: false,
-    date: new Date(),
-  },
-  {
-    id: 4,
-    title: "What is this?",
-    author: "Youssef Emad",
-    imageURL: "",
-    postBody:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Modi veritatis saepe iure eius aliquam cupiditate iste officia debitis, vel, ut atque harum, nesciunt voluptatem? Libero cumque molestias velit expedita inventore. Ad ea dolore expedita ullam vel consectetur error consequuntur soluta, odit alias quam voluptatibus neque facere maxime optio. Molestias dolorem cupiditate aliquam ducimus iure fugiat non, necessitatibus officiis sit est. Suscipit rerum molestiae adipisci dicta aliquam neque molestias laborum ipsam saepe fugit animi odio porro magnam tempore facilis, ad perspiciatis. Accusantium excepturi harum ea optio quod. Harum ad provident nam? Eum repellat, suscipit velit ullam repellendus numquam officiis debitis quia culpa commodi consequuntur exercitationem ipsam error aut asperiores illum odio tempora veniam nihil voluptate eos in. Itaque impedit recusandae hic! Ab vel ducimus tenetur tempora neque culpa, quae aspernatur nesciunt corporis? Dolorem repellendus a, veritatis et cumque obcaecati consectetur. Provident error voluptatum sunt ratione neque eos consequuntur, hic quidem quasi. Maiores deleniti laudantium consequatur nemo eligendi? Accusamus numquam asperiores amet sint praesentium ea distinctio assumenda magni, consequatur facilis quidem, quisquam labore nam modi eum impedit a. Libero quam temporibus ad! Sint rerum assumenda reiciendis officia quos excepturi adipisci, dolorem accusantium maiores vel odio, nesciunt similique harum non maxime. Maxime qui eos a vel facilis minima tenetur expedita laboriosam, magnam ipsa! Fugiat iure nisi itaque explicabo, vero incidunt beatae? Aut consequuntur debitis cupiditate facilis aperiam placeat ipsum numquam enim fugit perferendis, suscipit quo. Ullam facere ipsum perspiciatis ipsam quas labore fugit. Quisquam rerum fugit, dolor corrupti officiis aliquam quam dolore, suscipit obcaecati dolorum autem repellendus quos odit! Obcaecati pariatur, delectus nam eligendi ab, atque neque consequatur, consectetur nulla possimus at officia? Dolore repellat possimus id vel esse quasi numquam aliquid reprehenderit nihil quod explicabo eligendi soluta iste qui asperiores, unde placeat. Soluta excepturi unde, laborum maiores iusto ipsum nam debitis ad?",
-    tags: ["Hello", "World"],
-    likes: 50,
-    liked: true,
-    read: true,
-    date: new Date(),
-  },
-  {
-    id: 5,
-    title: "What is this?",
-    author: "Youssef Emad",
-    imageURL: "",
-    postBody:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Modi veritatis saepe iure eius aliquam cupiditate iste officia debitis, vel, ut atque harum, nesciunt voluptatem? Libero cumque molestias velit expedita inventore. Ad ea dolore expedita ullam vel consectetur error consequuntur soluta, odit alias quam voluptatibus neque facere maxime optio. Molestias dolorem cupiditate aliquam ducimus iure fugiat non, necessitatibus officiis sit est. Suscipit rerum molestiae adipisci dicta aliquam neque molestias laborum ipsam saepe fugit animi odio porro magnam tempore facilis, ad perspiciatis. Accusantium excepturi harum ea optio quod. Harum ad provident nam? Eum repellat, suscipit velit ullam repellendus numquam officiis debitis quia culpa commodi consequuntur exercitationem ipsam error aut asperiores illum odio tempora veniam nihil voluptate eos in. Itaque impedit recusandae hic! Ab vel ducimus tenetur tempora neque culpa, quae aspernatur nesciunt corporis? Dolorem repellendus a, veritatis et cumque obcaecati consectetur. Provident error voluptatum sunt ratione neque eos consequuntur, hic quidem quasi. Maiores deleniti laudantium consequatur nemo eligendi? Accusamus numquam asperiores amet sint praesentium ea distinctio assumenda magni, consequatur facilis quidem, quisquam labore nam modi eum impedit a. Libero quam temporibus ad! Sint rerum assumenda reiciendis officia quos excepturi adipisci, dolorem accusantium maiores vel odio, nesciunt similique harum non maxime. Maxime qui eos a vel facilis minima tenetur expedita laboriosam, magnam ipsa! Fugiat iure nisi itaque explicabo, vero incidunt beatae? Aut consequuntur debitis cupiditate facilis aperiam placeat ipsum numquam enim fugit perferendis, suscipit quo. Ullam facere ipsum perspiciatis ipsam quas labore fugit. Quisquam rerum fugit, dolor corrupti officiis aliquam quam dolore, suscipit obcaecati dolorum autem repellendus quos odit! Obcaecati pariatur, delectus nam eligendi ab, atque neque consequatur, consectetur nulla possimus at officia? Dolore repellat possimus id vel esse quasi numquam aliquid reprehenderit nihil quod explicabo eligendi soluta iste qui asperiores, unde placeat. Soluta excepturi unde, laborum maiores iusto ipsum nam debitis ad?",
-    tags: ["Hello", "World"],
-    likes: 50,
-    liked: false,
-    read: false,
-    date: new Date(),
-  },
-];
-
-const PostsShell = () => {
+const PostsShell = ({
+  searchQuery,
+  filters,
+}: {
+  searchQuery: string;
+  filters: Filters;
+}) => {
   const { posts, setPosts } = usePosts();
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
-    setPosts(ps);
-  }, []);
+    setIsLoading(true);
+    fetch("/api/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(filters),
+    })
+      .then((res) => res.json())
+      .then((data) => setPosts(data))
+      .finally(() => setIsLoading(false));
+  }, [filters]);
+
+  if (isLoading)
+    return (
+      <div className="w-full flex items-center justify-center">
+        <Loader2 className="animate-spin w-8 h-8" />
+      </div>
+    );
   return (
-    <>
-      <TabsContent value="all" className="m-0">
-        <PostsList posts={posts} />
-      </TabsContent>
-      <TabsContent value="unread" className="m-0">
-        <PostsList posts={posts.filter((post) => !post.read)} />
-      </TabsContent>
-    </>
+    <PostsList
+      posts={posts
+        .filter(
+          (post) =>
+            `${post.authorFullName} ${post.title} ${
+              post.body
+            } ${post.secondaryTags.join(" ")}`
+              .toLowerCase()
+              .indexOf(searchQuery.toLowerCase()) !== -1
+        )
+        .reverse()}
+    />
   );
 };
 

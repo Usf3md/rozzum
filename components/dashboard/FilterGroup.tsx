@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 
 import Link from "next/link";
 import { LucideIcon } from "lucide-react";
@@ -14,21 +14,28 @@ import {
 import { DefaultClassGroupIds } from "tailwind-merge";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
+import { Tag } from "@/app/types";
 
 interface Props {
-  options: {
-    id: number;
-    title: string;
-    icon: LucideIcon;
-  }[];
+  options: (Tag & { icon: LucideIcon })[];
   defaultSelectedOptions?: number[];
   label: string;
+  handleChange(tags: number[]): void;
 }
 
-const FilterGroup = ({ options, defaultSelectedOptions, label }: Props) => {
+const FilterGroup = ({
+  options,
+  defaultSelectedOptions,
+  label,
+  handleChange,
+}: Props) => {
   const [selectedOps, setSelectedOps] = useState<number[]>(
     defaultSelectedOptions ?? []
   );
+
+  useEffect(() => {
+    handleChange(selectedOps);
+  }, [selectedOps]);
   return (
     <div className="group flex flex-col gap-2 py-2 px-2">
       <h2 className="text-md font-semibold">{label}</h2>
@@ -46,8 +53,8 @@ const FilterGroup = ({ options, defaultSelectedOptions, label }: Props) => {
             >
               <div className="flex w-full justify-between">
                 <div className="flex gap-2">
-                  <option.icon className="h-4 w-4" />
-                  {option.title}
+                  <option.icon className="h-4 w-4 items-center" />
+                  {option.name}
                 </div>
                 <Checkbox
                   checked={

@@ -1,20 +1,28 @@
-import { StaticImageData } from "next/image";
+export type Tag = {
+  id: number;
+  name: string;
+};
 
 export type Post = {
   id: number;
   title: string;
-  author: string;
-  imageURL: string;
-  postBody: string;
-  tags: string[];
-  likes: number;
-  liked: boolean;
-  read: boolean;
-  date: Date;
+  body: string;
+  authorFullName: string;
+  likesNumber: number;
+  primaryTags: Tag[];
+  secondaryTags: Tag[];
 };
 
 export type PrimaryTag = {
   id: number;
   tagName: string;
   useCount: number;
+};
+
+export type User = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  image_file: string;
+  teamId: number;
 };
