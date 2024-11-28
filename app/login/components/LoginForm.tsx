@@ -12,9 +12,10 @@ import { useUser } from "@/app/context/UserContext";
 
 type User = { email: string; password: string };
 
-interface LoginForm extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function LoginForm({ className, ...props }: LoginForm) {
+export function LoginForm({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   const router = useRouter();
   const { setUser: setU } = useUser();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);

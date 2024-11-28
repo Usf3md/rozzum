@@ -21,8 +21,6 @@ import { useState } from "react";
 import { Tag } from "@/app/types";
 import { iconsMap } from "@/app/common";
 
-interface SignupForm extends React.HTMLAttributes<HTMLDivElement> {}
-
 type Form = {
   first_name: string;
   last_name: string;
@@ -32,7 +30,10 @@ type Form = {
   team_id: number;
 };
 
-export function SignupForm({ className, ...props }: SignupForm) {
+export function SignupForm({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   const router = useRouter();
   const [primaryTags, setPrimaryTags] = useState<Tag[]>([]);
   React.useEffect(() => {
@@ -145,7 +146,10 @@ export function SignupForm({ className, ...props }: SignupForm) {
                     <SelectGroup>
                       <SelectLabel>Department</SelectLabel>
                       {options.map((option) => (
-                        <SelectItem value={option.id.toString()}>
+                        <SelectItem
+                          key={option.id}
+                          value={option.id.toString()}
+                        >
                           <div className="flex gap-2 items-center">
                             <option.icon className="h-4 w-4" />
                             {option.name}

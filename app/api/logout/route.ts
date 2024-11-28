@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  let response = new NextResponse();
+  const response = new NextResponse();
   response.cookies.set("AuthToken", "", {
     httpOnly: true,
     secure: false,
