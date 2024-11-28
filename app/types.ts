@@ -3,6 +3,12 @@ export type Tag = {
   name: string;
 };
 
+export type PopularTag = {
+  id: number;
+  name: string;
+  totalLikes: number;
+};
+
 export type Post = {
   id: number;
   title: string;
@@ -11,6 +17,23 @@ export type Post = {
   likesNumber: number;
   primaryTags: Tag[];
   secondaryTags: Tag[];
+};
+
+export type PostInfo = {
+  id: number;
+  title: string;
+  body: string;
+  authorFullName: string;
+  likesNumber: number;
+  comments: Comment[];
+};
+
+export type Comment = {
+  id: number;
+  body: string;
+  numberOfLikes: number;
+  authorFullName: string;
+  time: Date;
 };
 
 export type PrimaryTag = {

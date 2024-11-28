@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Post as PostType } from "@/app/types";
+import { Comment, PostInfo, Post as PostType } from "@/app/types";
 import {
   Card,
   CardContent,
@@ -13,11 +13,32 @@ import { Button } from "../ui/button";
 import { Heart, Plus } from "lucide-react";
 import LikeButton from "./LikeButton";
 import BookmarkButton from "./BookmarkButton";
+import PostDialog from "./PostDialog";
+import { usePosts } from "@/app/context/PostsContext";
 type Props = {
   postData: PostType;
 };
 
 const Post = ({ postData }: Props) => {
+  const [postInfo, setPostInfo] = useState<PostInfo>();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCommentAddition = (body: string) => {
+    if (postInfo)
+      setPostInfo({
+        ...postInfo,
+        comments: [
+          ...postInfo?.comments,
+          {
+            authorFullName: postInfo.authorFullName,
+            body,
+            id: -1,
+            numberOfLikes: 0,
+            time: new Date(),
+          },
+        ],
+      });
+  };
   return (
     <Card
       key={postData.id}
@@ -28,9 +49,25 @@ const Post = ({ postData }: Props) => {
           <div className="flex w-full flex-col gap-1">
             <div className="flex justify-between">
               <div className="flex items-center">
-                <div className="font-semibold text-xl  hover:cursor-pointer hover:underline underline-offset-2">
-                  {postData.title}
-                </div>
+                <PostDialog
+                  loading={isLoading}
+                  postInfo={postInfo}
+                  addComment={handleCommentAddition}
+                >
+                  <h2
+                    className="font-semibold text-xl  hover:cursor-pointer hover:underline underline-offset-2"
+                    onClick={async () => {
+                      setIsLoading(true);
+                      const response = await fetch(`/api/posts/${postData.id}`);
+                      if (response.ok) {
+                        setPostInfo(await response.json());
+                      }
+                      setIsLoading(false);
+                    }}
+                  >
+                    {postData.title}
+                  </h2>
+                </PostDialog>
               </div>
               <div className={"text-xs text-muted-foreground"}>
                 {/* {postData.date.toLocaleDateString()} */}
@@ -58,9 +95,10 @@ const Post = ({ postData }: Props) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <p className="line-clamp-2 text-xs text-muted-foreground">
-          {postData.body}
-        </p>
+        <p
+          className="line-clamp-2 text-xs text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: postData.body }}
+        ></p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <div className="flex justify-between w-full">

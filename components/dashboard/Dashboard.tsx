@@ -7,7 +7,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "../ui/resizable";
-import { Post, Tag } from "@/app/types";
+import { PopularTag, Post, Tag } from "@/app/types";
 import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
 import FilterGroup from "./FilterGroup";
@@ -50,6 +50,7 @@ import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
 import { iconsMap } from "@/app/common";
 import CreatePostDialog from "./CreatePostDialog";
+import { Badge } from "../ui/badge";
 
 interface DashboardProps {
   posts: Post[];
@@ -64,9 +65,10 @@ type Filters = {
   bookmarks: boolean;
 };
 
-const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
+const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
   const [primaryTags, setPrimaryTags] = useState<Tag[]>([]);
   const [secondaryTags, setSecondaryTags] = useState<Tag[]>([]);
+  const [popularTags, setPopularTags] = useState<PopularTag[]>([]);
   const { user } = useUser();
   const [filters, setFilters] = useState<Filters>({
     primaryTags: user?.teamId ? [user.teamId] : [],
@@ -82,6 +84,11 @@ const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
     fetch("/api/secondaryTags")
       .then((res) => res.json())
       .then((data) => setSecondaryTags(data));
+  }, []);
+  useEffect(() => {
+    fetch("/api/popularTags")
+      .then((res) => res.json())
+      .then((data) => setPopularTags(data));
   }, []);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,8 +110,9 @@ const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
           minSize={15}
           maxSize={20}
         >
-          <div className="flex h-[52px] justify-center items-center p-4">
+          <div className="flex h-[52px] items-center p-4 gap-2">
             <Logo size={24} />
+            <h1 className="text-xl font-bold">Rozzum</h1>
           </div>
           <Separator />
           <ScrollArea style={{ height: "calc(100vh - 52px)" }}>
@@ -164,7 +172,10 @@ const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
           </PostsProvider>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={defaultLayout[2]} minSize={24}>
+        <ResizablePanel
+          defaultSize={defaultLayout[2]}
+          minSize={defaultLayout[2]}
+        >
           <div className="flex justify-end gap-4 items-center px-4 py-2">
             <div className="flex gap-4">
               <ModeToggle />
@@ -212,7 +223,16 @@ const Dashboard = ({ defaultLayout = [16, 52, 32] }: DashboardProps) => {
             </DropdownMenu>
           </div>
           <Separator />
-          <div>Ranking and stats</div>
+          <div className="flex gap-1 flex-wrap p-4">
+            {popularTags.map((tag) => (
+              <Badge key={tag.id}>
+                <div className="flex gap-2">
+                  <span>{tag.name}</span>
+                  <span>{tag.totalLikes}</span>
+                </div>
+              </Badge>
+            ))}
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </TooltipProvider>
