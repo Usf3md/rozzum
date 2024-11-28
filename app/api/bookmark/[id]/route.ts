@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
 interface Props {
-  params: { id: number };
+  params: Promise<{ id: number }>;
 }
 
 export async function POST(request: NextRequest, { params }: Props) {
   const response = await fetch(
-    `https://hackathonknowledgeshare-h2b3eegufpdsd8g4.eastus2-01.azurewebsites.net/bookmark/${params.id}`,
+    `https://hackathonknowledgeshare-h2b3eegufpdsd8g4.eastus2-01.azurewebsites.net/bookmark/${
+      (
+        await params
+      ).id
+    }`,
     {
       method: "POST",
       headers: request.headers,
@@ -20,7 +24,11 @@ export async function POST(request: NextRequest, { params }: Props) {
 }
 export async function DELETE(request: NextRequest, { params }: Props) {
   const response = await fetch(
-    `https://hackathonknowledgeshare-h2b3eegufpdsd8g4.eastus2-01.azurewebsites.net/bookmark/${params.id}`,
+    `https://hackathonknowledgeshare-h2b3eegufpdsd8g4.eastus2-01.azurewebsites.net/bookmark/${
+      (
+        await params
+      ).id
+    }`,
     {
       method: "DELETE",
       headers: request.headers,
