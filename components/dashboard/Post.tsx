@@ -70,8 +70,7 @@ const Post = ({ postData }: Props) => {
                 </PostDialog>
               </div>
               <div className={"text-xs text-muted-foreground"}>
-                {/* {postData.date.toLocaleDateString()} */}
-                date
+                {new Date(postData.time).toLocaleDateString()}
               </div>
             </div>
             <div className="flex items-center justify-between">

@@ -14,9 +14,11 @@ export type Post = {
   title: string;
   body: string;
   authorFullName: string;
+  isBookMarkPost: boolean;
   likesNumber: number;
   primaryTags: Tag[];
   secondaryTags: Tag[];
+  time: Date;
 };
 
 export type PostInfo = {

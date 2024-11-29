@@ -27,6 +27,7 @@ import { Separator } from "../ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Textarea } from "../ui/textarea";
 import { ScrollArea } from "../ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 type Props = {
   children: ReactNode;
@@ -50,7 +51,12 @@ const PostDialog = ({ children, postInfo, loading, addComment }: Props) => {
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent className="max-w-[80rem]">
+      <DialogContent
+        className={cn(
+          "max-w-[40rem]",
+          postInfo?.comments.length && "max-w-[80rem]"
+        )}
+      >
         {loading ? (
           <DialogTitle>
             <div className="w-full flex items-center justify-center">
@@ -129,55 +135,65 @@ const PostDialog = ({ children, postInfo, loading, addComment }: Props) => {
                 </div>
               </div>
             </div>
-            <div className="h-full border border-s-muted-foreground"></div>
-            <DialogFooter className="flex sm:justify-start w-full">
-              <div className="w-full flex flex-col gap-2">
-                {postInfo?.comments.length ? (
-                  <div className="flex flex-col gap-2">
-                    <label>Comments</label>
-                    <ScrollArea className="h-[30rem] w-full">
-                      <div className="flex flex-col gap-4 p-4">
-                        {[...postInfo?.comments].reverse().map((comment) => (
-                          <div
-                            key={`${new Date(comment.time).toISOString()}${
-                              comment.id
-                            }`}
-                            className="flex gap-2"
-                          >
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage alt="User Image" />
-                              <AvatarFallback className="text-sm">
-                                {comment.authorFullName
-                                  .split(" ")
-                                  .map((word) => word.substring(0, 1))
-                                  .join("")
-                                  .toLocaleUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col w-full">
-                              <div className="flex justify-between">
-                                <div className="text-xs font-medium">
-                                  {comment.authorFullName}
+            {postInfo?.comments.length ? (
+              <>
+                <div
+                  data-orientation="horizontal"
+                  role="none"
+                  className="shrink-0 bg-border h-full w-[1px]"
+                ></div>
+                <DialogFooter className="flex sm:justify-start w-full">
+                  <div className="w-full flex flex-col gap-2">
+                    {postInfo?.comments.length ? (
+                      <div className="flex flex-col gap-2">
+                        <label>Comments</label>
+                        <ScrollArea className="h-[30rem] w-full">
+                          <div className="flex flex-col gap-4 p-4">
+                            {[...postInfo?.comments]
+                              .reverse()
+                              .map((comment) => (
+                                <div
+                                  key={`${new Date(
+                                    comment.time
+                                  ).toISOString()}${comment.id}`}
+                                  className="flex gap-2"
+                                >
+                                  <Avatar className="w-8 h-8">
+                                    <AvatarImage alt="User Image" />
+                                    <AvatarFallback className="text-sm">
+                                      {comment.authorFullName
+                                        .split(" ")
+                                        .map((word) => word.substring(0, 1))
+                                        .join("")
+                                        .toLocaleUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col w-full">
+                                    <div className="flex justify-between">
+                                      <div className="text-xs font-medium">
+                                        {comment.authorFullName}
+                                      </div>
+                                      <p className="text-xs font-medium">
+                                        {new Date(comment.time).toDateString()}
+                                      </p>
+                                    </div>
+                                    <p
+                                      className="text-md text-foreground"
+                                      dangerouslySetInnerHTML={{
+                                        __html: comment.body,
+                                      }}
+                                    ></p>
+                                  </div>
                                 </div>
-                                <p className="text-xs font-medium">
-                                  {new Date(comment.time).toDateString()}
-                                </p>
-                              </div>
-                              <p
-                                className="text-md text-foreground"
-                                dangerouslySetInnerHTML={{
-                                  __html: comment.body,
-                                }}
-                              ></p>
-                            </div>
+                              ))}
                           </div>
-                        ))}
+                        </ScrollArea>
                       </div>
-                    </ScrollArea>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            </DialogFooter>
+                </DialogFooter>
+              </>
+            ) : null}
           </div>
         )}
       </DialogContent>
