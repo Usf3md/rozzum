@@ -7,7 +7,12 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "../ui/resizable";
-import { PopularTag, Post, Tag } from "@/app/types";
+import {
+  Notification as NotificationType,
+  PopularTag,
+  Post,
+  Tag,
+} from "@/app/types";
 import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
 import FilterGroup from "./FilterGroup";
@@ -22,6 +27,8 @@ import {
   TagIcon,
   Loader2,
   PlusCircle,
+  Bookmark,
+  Bell,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Input } from "../ui/input";
@@ -51,6 +58,8 @@ import { useRouter } from "next/navigation";
 import { iconsMap } from "@/app/common";
 import CreatePostDialog from "./CreatePostDialog";
 import { Badge } from "../ui/badge";
+import { Label } from "../ui/label";
+import Notificaiton from "./Notification";
 
 interface DashboardProps {
   posts: Post[];
@@ -60,20 +69,24 @@ interface DashboardProps {
 }
 
 type Filters = {
-  primaryTags: number[];
-  secondaryTags: number[];
-  bookmarks: boolean;
+  primaryTagIds: number[];
+  secondaryTagIds: number[];
+  bookmarked: boolean;
 };
 
 const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
   const [primaryTags, setPrimaryTags] = useState<Tag[]>([]);
   const [secondaryTags, setSecondaryTags] = useState<Tag[]>([]);
   const [popularTags, setPopularTags] = useState<PopularTag[]>([]);
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const filteredNotifications = notifications.filter(
+    (notification) => !notification.isSeen
+  );
   const { user } = useUser();
   const [filters, setFilters] = useState<Filters>({
-    primaryTags: user?.teamId ? [user.teamId] : [],
-    secondaryTags: [],
-    bookmarks: false,
+    primaryTagIds: user?.teamId ? [user.teamId] : [],
+    secondaryTagIds: [],
+    bookmarked: false,
   });
   useEffect(() => {
     fetch("/api/primaryTags")
@@ -89,6 +102,11 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
     fetch("/api/popularTags")
       .then((res) => res.json())
       .then((data) => setPopularTags(data));
+  }, []);
+  useEffect(() => {
+    fetch("/api/notifications")
+      .then((res) => res.json())
+      .then((data) => setNotifications(data));
   }, []);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,11 +129,28 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
           maxSize={20}
         >
           <div className="flex h-[52px] items-center p-4 gap-2">
-            <Logo size={24} />
+            <Logo size={28} />
             <h1 className="text-xl font-bold">Rozzum</h1>
           </div>
           <Separator />
           <ScrollArea style={{ height: "calc(100vh - 52px)" }}>
+            <div className="mt-4 flex justify-between px-2 items-center">
+              <h2 className="text-md font-semibold">Bookmarks</h2>
+              <Button
+                variant={filters.bookmarked ? "secondary" : "outline"}
+                onClick={() =>
+                  setFilters({ ...filters, bookmarked: !filters.bookmarked })
+                }
+              >
+                <Bookmark
+                  className={cn(
+                    "h-5 w-5 fill-transparent transition-all ease-in-out",
+                    filters.bookmarked && "fill-amber-400"
+                  )}
+                />
+              </Button>
+            </div>
+            <Separator className="my-2 " />
             <FilterGroup
               label="Primary Tags"
               options={options}
@@ -123,10 +158,10 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
               handleChange={(ids) =>
                 setFilters({
                   ...filters,
-                  primaryTags: ids,
+                  primaryTagIds: ids,
                 })
               }
-            ></FilterGroup>
+            />
             <Separator className="my-2 " />
             <FilterGroup
               label="Secondary Tags"
@@ -138,10 +173,10 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
               handleChange={(ids) =>
                 setFilters({
                   ...filters,
-                  secondaryTags: ids,
+                  secondaryTagIds: ids,
                 })
               }
-            ></FilterGroup>
+            />
           </ScrollArea>
         </ResizablePanel>
         <ResizableHandle withHandle />
@@ -177,6 +212,37 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
           minSize={defaultLayout[2]}
         >
           <div className="flex justify-end gap-4 items-center px-4 py-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  className={cn(
+                    "relative",
+                    filteredNotifications.length && "cursor-pointer"
+                  )}
+                >
+                  <Bell className="w-5 h-5"></Bell>
+                  {notifications.filter((notification) => !notification.isSeen)
+                    .length ? (
+                    <span className="absolute flex h-2 w-2 rounded-full bg-blue-600 top-0 right-0 " />
+                  ) : null}
+                </div>
+              </DropdownMenuTrigger>
+
+              {filteredNotifications.length ? (
+                <DropdownMenuContent className="w-[24rem]">
+                  <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    {filteredNotifications.map((notification) => (
+                      <Notificaiton
+                        key={notification.id}
+                        notification={notification}
+                      />
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              ) : null}
+            </DropdownMenu>
             <div className="flex gap-4">
               <ModeToggle />
             </div>

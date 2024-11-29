@@ -9,10 +9,10 @@ type Props = {
 
 const Logo = ({ size }: Props) => {
   const { theme } = useTheme();
-  let LogoSVG = LightSVG;
-  if (theme === "dark") LogoSVG = DarkSVG;
+  let LogoSVG = DarkSVG;
+  if (theme === "dark") LogoSVG = LightSVG;
   return (
-    <div className="w-11 h-11 bg-foreground rounded-full flex items-center justify-center">
+    <div className="w-11 h-11 border border-foreground rounded-full flex items-center justify-center">
       <Image src={LogoSVG} alt="logo" width={size} height={size} />
     </div>
   );

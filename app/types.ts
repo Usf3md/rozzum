@@ -51,3 +51,13 @@ export type User = {
   image_file: string;
   teamId: number;
 };
+
+export type Notification = {
+  id: number;
+  postId: number;
+  userId: number;
+  title: string;
+  body: string;
+  createdAt: Date;
+  isSeen: boolean;
+};

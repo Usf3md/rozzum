@@ -15,12 +15,14 @@ import LikeButton from "./LikeButton";
 import BookmarkButton from "./BookmarkButton";
 import PostDialog from "./PostDialog";
 import { usePosts } from "@/app/context/PostsContext";
+import { useUser } from "@/app/context/UserContext";
 type Props = {
   postData: PostType;
 };
 
 const Post = ({ postData }: Props) => {
   const [postInfo, setPostInfo] = useState<PostInfo>();
+  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCommentAddition = (body: string) => {
@@ -30,7 +32,7 @@ const Post = ({ postData }: Props) => {
         comments: [
           ...postInfo?.comments,
           {
-            authorFullName: postInfo.authorFullName,
+            authorFullName: `${user?.first_name} ${user?.last_name}`,
             body,
             id: -1,
             numberOfLikes: 0,
