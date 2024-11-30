@@ -1,4 +1,3 @@
-import { Post } from "@/app/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -11,6 +10,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     }
   );
-  const responseBody = await response.json();
-  return NextResponse.json(responseBody, { status: response.status });
+  return NextResponse.json(
+    { status: response.status },
+    { status: response.status }
+  );
 }

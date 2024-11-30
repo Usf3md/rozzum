@@ -32,7 +32,6 @@ export function LoginForm({
     });
     if (response.ok) {
       const body = await response.json();
-      console.log(body);
       setU(body);
       router.push("/");
     }

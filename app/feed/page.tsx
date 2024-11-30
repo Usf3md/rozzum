@@ -1,10 +1,10 @@
 "use client";
-import { useUser } from "./context/UserContext";
+import Dashboard from "@/components/dashboard/Dashboard";
+import { useUser } from "../context/UserContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Overview from "@/components/overview/overview";
 
-export default function Home() {
+export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const { user, setUser } = useUser();
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function Home() {
   return (
     !isLoading && (
       <div className="h-svh flex-col flex">
-        <Overview posts={[]} defaultLayout={undefined}></Overview>
+        <Dashboard posts={[]} defaultLayout={undefined}></Dashboard>
       </div>
     )
   );

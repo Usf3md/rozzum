@@ -15,7 +15,7 @@ import {
 } from "@/app/types";
 import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
-import FilterGroup from "./FilterGroup";
+import FilterGroup from "../dashboard/FilterGroup";
 import {
   Search,
   PaintRoller,
@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Input } from "../ui/input";
-import PostsList from "./PostsList";
+import PostsList from "../dashboard/PostsList";
 import Logo from "../Logo";
 import { ModeToggle } from "../ModeToggle";
 import { ScrollArea } from "../ui/scroll-area";
@@ -56,11 +56,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
 import { iconsMap } from "@/app/common";
-import CreatePostDialog from "./CreatePostDialog";
+import CreatePostDialog from "../dashboard/CreatePostDialog";
 import { Badge } from "../ui/badge";
 import { Label } from "../ui/label";
-import Notificaiton from "./Notification";
+import Notificaiton from "../dashboard/Notification";
 import Link from "next/link";
+import Feed from "./Feed";
 
 interface DashboardProps {
   posts: Post[];
@@ -75,49 +76,19 @@ type Filters = {
   bookmarked: boolean;
 };
 
-const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
-  const [primaryTags, setPrimaryTags] = useState<Tag[]>([]);
-  const [secondaryTags, setSecondaryTags] = useState<Tag[]>([]);
-  const [popularTags, setPopularTags] = useState<PopularTag[]>([]);
+const Overview = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const filteredNotifications = notifications.filter(
     (notification) => !notification.isSeen
   );
   const { user } = useUser();
-  const [filters, setFilters] = useState<Filters>({
-    primaryTagIds: user?.teamId ? [user.teamId] : [],
-    secondaryTagIds: [],
-    bookmarked: false,
-  });
-  useEffect(() => {
-    fetch("/api/primaryTags")
-      .then((res) => res.json())
-      .then((data) => setPrimaryTags(data));
-  }, []);
-  useEffect(() => {
-    fetch("/api/secondaryTags")
-      .then((res) => res.json())
-      .then((data) => setSecondaryTags(data));
-  }, []);
-  useEffect(() => {
-    fetch("/api/popularTags")
-      .then((res) => res.json())
-      .then((data) => setPopularTags(data));
-  }, []);
+  const router = useRouter();
+
   useEffect(() => {
     fetch("/api/notifications")
       .then((res) => res.json())
       .then((data) => setNotifications(data));
   }, []);
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const options = primaryTags.map((tag) => ({
-    ...tag,
-    icon:
-      iconsMap.find(
-        (item) => item.tagName.toLowerCase() === tag.name.toLowerCase()
-      )?.tagIcon ?? TagIcon,
-  }));
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -130,87 +101,23 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
           minSize={15}
           maxSize={20}
         >
-          <Link href="/">
-            <div className="flex h-[52px] items-center p-4 gap-2">
-              <Logo size={28} />
-              <h1 className="text-xl font-bold">Rozzum</h1>
-            </div>
-          </Link>
+          <div className="flex h-[52px] items-center p-4 gap-2">
+            <Logo size={28} />
+            <h1 className="text-xl font-bold">Rozzum</h1>
+          </div>
           <Separator />
-          <ScrollArea style={{ height: "calc(100vh - 52px)" }}>
-            <div className="mt-4 flex justify-between px-2 items-center">
-              <h2 className="text-md font-semibold">Bookmarks</h2>
-              <Button
-                variant={filters.bookmarked ? "secondary" : "outline"}
-                onClick={() =>
-                  setFilters({ ...filters, bookmarked: !filters.bookmarked })
-                }
-              >
-                <Bookmark
-                  className={cn(
-                    "h-5 w-5 fill-transparent transition-all ease-in-out",
-                    filters.bookmarked && "fill-amber-400"
-                  )}
-                />
-              </Button>
-            </div>
-            <Separator className="my-2 " />
-            <FilterGroup
-              label="Primary Tags"
-              options={options}
-              defaultSelectedOptions={user?.teamId ? [user.teamId] : []}
-              handleChange={(ids) =>
-                setFilters({
-                  ...filters,
-                  primaryTagIds: ids,
-                })
-              }
-            />
-            <Separator className="my-2 " />
-            <FilterGroup
-              label="Secondary Tags"
-              options={secondaryTags.map((tag) => ({
-                ...tag,
-                icon: TagIcon,
-              }))}
-              defaultSelectedOptions={[]}
-              handleChange={(ids) =>
-                setFilters({
-                  ...filters,
-                  secondaryTagIds: ids,
-                })
-              }
-            />
-          </ScrollArea>
+          <div>Raisa Raisa Raisa Raisa Raisa Raisa</div>
         </ResizablePanel>
-        <ResizableHandle withHandle />
+
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-          <div className=" h-[52px] flex justify-between items-center px-4 py-2">
-            <h1 className="text-xl font-bold">Posts</h1>
-            <CreatePostDialog
-              primaryTags={primaryTags}
-              secondaryTags={secondaryTags}
-            />
+          <div className=" h-[52px] flex justify-end items-center px-4 py-2">
+            <Button asChild>
+              <Link href="/feed">Feed</Link>
+            </Button>
           </div>
           <Separator />
-          <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <form>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search"
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </form>
-          </div>
-          <PostsProvider>
-            <PostsShell searchQuery={searchQuery} filters={filters} />
-          </PostsProvider>
+          <Feed />
         </ResizablePanel>
-        <ResizableHandle withHandle />
         <ResizablePanel
           defaultSize={defaultLayout[2]}
           minSize={defaultLayout[2]}
@@ -293,16 +200,6 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
             </DropdownMenu>
           </div>
           <Separator />
-          <div className="flex gap-1 flex-wrap p-4">
-            {popularTags.slice(0, 5).map((tag) => (
-              <Badge key={tag.id}>
-                <div className="flex gap-2">
-                  <span>{tag.name}</span>
-                  <span>{tag.totalLikes}</span>
-                </div>
-              </Badge>
-            ))}
-          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </TooltipProvider>
@@ -354,4 +251,4 @@ const PostsShell = ({
   );
 };
 
-export default Dashboard;
+export default Overview;

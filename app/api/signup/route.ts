@@ -13,6 +13,5 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     }
   );
-  console.log(response);
   return response;
 }

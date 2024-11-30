@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
     }
   );
   const responseBody = await response.json();
-  const newResponse = NextResponse.json(responseBody, { status: 200 });
+  const newResponse = NextResponse.json(responseBody, {
+    status: response.status,
+  });
   const cookies = response.headers.get("set-cookie");
   if (cookies !== null) newResponse.headers.set("set-cookie", cookies);
 
