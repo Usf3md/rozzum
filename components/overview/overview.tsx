@@ -62,6 +62,8 @@ import { Label } from "../ui/label";
 import Notificaiton from "../dashboard/Notification";
 import Link from "next/link";
 import Feed from "./Feed";
+import Image from "next/image";
+import Raisa from "@/public/raisa-black.png";
 
 interface DashboardProps {
   posts: Post[];
@@ -76,7 +78,7 @@ type Filters = {
   bookmarked: boolean;
 };
 
-const Overview = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
+const Overview = ({ defaultLayout = [16, 68, 16] }: DashboardProps) => {
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const filteredNotifications = notifications.filter(
     (notification) => !notification.isSeen
@@ -106,7 +108,6 @@ const Overview = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
             <h1 className="text-xl font-bold">Rozzum</h1>
           </div>
           <Separator />
-          <div>Raisa Raisa Raisa Raisa Raisa Raisa</div>
         </ResizablePanel>
 
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
