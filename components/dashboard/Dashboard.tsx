@@ -29,6 +29,7 @@ import {
   PlusCircle,
   Bookmark,
   Bell,
+  ScrollText,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Input } from "../ui/input";
@@ -130,12 +131,10 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
           minSize={15}
           maxSize={20}
         >
-          <Link href="/">
-            <div className="flex h-[52px] items-center p-4 gap-2">
-              <Logo size={28} />
-              <h1 className="text-xl font-bold">Rozzum</h1>
-            </div>
-          </Link>
+          <div className="flex h-[52px] items-center p-4 gap-2">
+            <Logo size={28} />
+            <h1 className="text-xl font-bold">Rozzum</h1>
+          </div>
           <Separator />
           <ScrollArea style={{ height: "calc(100vh - 52px)" }}>
             <div className="mt-4 flex justify-between px-2 items-center">
@@ -187,10 +186,17 @@ const Dashboard = ({ defaultLayout = [16, 64, 20] }: DashboardProps) => {
         <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
           <div className=" h-[52px] flex justify-between items-center px-4 py-2">
             <h1 className="text-xl font-bold">Posts</h1>
-            <CreatePostDialog
-              primaryTags={primaryTags}
-              secondaryTags={secondaryTags}
-            />
+            <div className="flex gap-2 items-center">
+              <Link href="/">
+                <Button variant="outline">
+                  <ScrollText /> Overview
+                </Button>
+              </Link>
+              <CreatePostDialog
+                primaryTags={primaryTags}
+                secondaryTags={secondaryTags}
+              />
+            </div>
           </div>
           <Separator />
           <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
