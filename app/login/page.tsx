@@ -22,7 +22,7 @@ export default function AuthenticationPage() {
     })
       .then((res) => res.json())
       .then((data) => setUser(data))
-      .then(() => router.push("/feed"));
+      .then(() => router.push("/"));
   }, []);
   return (
     <div className="h-screen flex items-center w-full">

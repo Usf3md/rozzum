@@ -207,49 +207,4 @@ const Overview = ({ defaultLayout = [16, 68, 16] }: DashboardProps) => {
   );
 };
 
-const PostsShell = ({
-  searchQuery,
-  filters,
-}: {
-  searchQuery: string;
-  filters: Filters;
-}) => {
-  const { posts, setPosts } = usePosts();
-  const [isLoading, setIsLoading] = useState(false);
-  useEffect(() => {
-    setIsLoading(true);
-    fetch("/api/posts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(filters),
-    })
-      .then((res) => res.json())
-      .then((data) => setPosts(data))
-      .finally(() => setIsLoading(false));
-  }, [filters]);
-
-  if (isLoading)
-    return (
-      <div className="w-full flex items-center justify-center">
-        <Loader2 className="animate-spin w-8 h-8" />
-      </div>
-    );
-  return (
-    <PostsList
-      posts={posts
-        .filter(
-          (post) =>
-            `${post.authorFullName} ${post.title} ${
-              post.body
-            } ${post.secondaryTags.join(" ")}`
-              .toLowerCase()
-              .indexOf(searchQuery.toLowerCase()) !== -1
-        )
-        .reverse()}
-    />
-  );
-};
-
 export default Overview;
