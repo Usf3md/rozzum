@@ -33,7 +33,7 @@ export function LoginForm({
     if (response.ok) {
       const body = await response.json();
       setU(body);
-      router.push("/");
+      router.push("/feed");
     }
     setIsLoading(false);
   }
