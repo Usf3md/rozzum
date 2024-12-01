@@ -59,7 +59,14 @@ const Feed = () => {
               </Link>
             </p>
             <p>
-              :
+              <Link
+                className="underline underline-offset-2 text-blue-600"
+                href="https://docs.raisa.com/dev/db/ext/index.html/"
+              >
+                Dev team: External views
+              </Link>
+            </p>
+            <p>
               <Link
                 className="underline underline-offset-2 text-blue-600"
                 href="https://app.powerbi.com/groups/83cb3c6e-fe5e-471c-9b1a-66383b8c3d6f/list?ctid=d5ae53bd-dc2c-491a-ab98-4dd769498190&experience=power-bi"
